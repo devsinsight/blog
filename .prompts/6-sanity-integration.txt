@@ -1,0 +1,170 @@
+You are Roo Code running in VS Code on Windows 11. Use npm (NOT pnpm).
+Goal: Integrate Sanity CMS into our existing Next.js blog frontend using Sanity’s official Next.js approach (next-sanity + @sanity/image-url) while keeping SOLID boundaries and Next.js best practices. Replace mock data in Home and Post Detail with Sanity content. Add minimal Portable Text rendering. Add unit tests for mapping/pure logic (no network calls). Run lint/test/build and fix until all are green.
+
+IMPORTANT CONSTRAINTS
+- Follow SOLID: UI must not depend directly on Sanity queries/config; it should depend on an abstraction (ContentProvider).
+- Keep it minimal (blog only). No overengineering.
+- Use Next.js App Router server components for data fetching.
+- Do NOT add Tailwind or other styling frameworks; we use Material UI already.
+- Use Sanity guide concepts (next-sanity client + revalidate options), but adapt to our folder structure and MUI.
+
+ASSUMPTIONS
+- Repo already exists and passes baseline build/test/lint (or fix first).
+- Jest + Testing Library configured.
+- We have layout/header/footer components already; do not redesign them.
+
+STEP 0 — Baseline checks (must pass before any changes)
+Run and ensure green:
+- npm run lint
+- npm run test
+- npm run build
+If anything fails, fix baseline first.
+
+STEP 1 — Install Sanity dependencies (align with Sanity guide)
+Inside the frontend project root, install:
+- next-sanity
+- @sanity/image-url
+- @portabletext/react  (portable text renderer; keep it simple)
+Use legacy peer deps only if npm reports peer dependency conflicts:
+- First try: npm install next-sanity @sanity/image-url @portabletext/react
+- If it fails due to peer deps: npm install --legacy-peer-deps next-sanity @sanity/image-url @portabletext/react
+
+STEP 2 — Environment variables (server-only sensitive values)
+Create/update .env.local (do NOT commit):
+- NEXT_PUBLIC_SANITY_PROJECT_ID=3lfa5ssv
+- NEXT_PUBLIC_SANITY_DATASET=production
+- NEXT_PUBLIC_SANITY_API_VERSION=2024-01-01
+- SANITY_READ_TOKEN=   (optional; blank if dataset is public)
+Ensure .env.local is in .gitignore.
+
+NOTE:
+- projectId/dataset/apiVersion can be NEXT_PUBLIC because they are not secrets.
+- token must NOT be NEXT_PUBLIC and must only be used on server.
+
+STEP 3 — Create Sanity client (following guide, but in our structure)
+Create directory: src/lib/cms/sanity
+
+Create file: src/lib/cms/sanity/client.ts
+- Use createClient from "next-sanity"
+- Read env vars
+- useCdn should be:
+  - true when SANITY_READ_TOKEN is empty (public reads)
+  - false when SANITY_READ_TOKEN exists (private/preview)
+- token should be included only when SANITY_READ_TOKEN exists
+
+Example behavior:
+- export const sanityClient = createClient({ projectId, dataset, apiVersion, useCdn, token? })
+
+STEP 4 — SOLID abstraction: ContentProvider (Strategy pattern)
+Create/ensure domain type:
+- src/features/blog/domain/Post.ts
+  Minimal fields:
+  - id: string
+  - title: string
+  - slug: string
+  - publishedAt?: string
+  - excerpt?: string
+  - body?: unknown (Portable Text)
+  - coverImage?: unknown
+  - authorName?: string
+
+Create interface:
+- src/features/blog/services/ContentProvider.ts
+  export interface ContentProvider {
+    getLatestPosts(limit?: number): Promise<Post[]>;
+    getPostBySlug(slug: string): Promise<Post | null>;
+  }
+
+STEP 5 — Sanity queries + mapper + provider (Anti-corruption layer)
+In src/lib/cms/sanity:
+A) queries.ts
+- Create GROQ queries (based on Sanity guide, but return only what we need):
+  - POSTS_QUERY: list of posts with _id, title, "slug": slug.current, publishedAt, excerpt, coverImage, author->name
+  - POST_QUERY: single post by slug (same fields + body/content field)
+Use params ($slug) and ($limit) where appropriate.
+Use Next.js revalidate option with fetch options:
+- const options = { next: { revalidate: 30 } };
+
+B) mappers.ts (pure functions)
+- mapSanityPostListItem(doc): Post
+- mapSanityPostDetail(doc): Post
+Requirements:
+- slug must end up as a plain string
+- id must map from _id
+- handle missing fields safely
+
+C) SanityContentProvider.ts
+- class SanityContentProvider implements ContentProvider
+- uses sanityClient.fetch with queries and options { next: { revalidate: 30 } }
+- never exports GROQ queries to UI layers
+
+D) provider.ts (factory)
+- src/lib/cms/provider.ts
+  export const contentProvider: ContentProvider = new SanityContentProvider();
+
+STEP 6 — Portable Text renderer + optional image URL helper
+A) PortableText renderer (minimal)
+Create:
+- src/features/blog/ui/PortableTextRenderer/PortableTextRenderer.tsx
+Use PortableText from "@portabletext/react" (NOT Tailwind).
+Provide minimal component mappings:
+- h2/h3, p, a (open external links safely)
+Keep it accessible.
+Only add "use client" if truly needed.
+
+B) Optional: Sanity image URL helper (keep minimal)
+Create:
+- src/lib/cms/sanity/image.ts
+Implement a urlFor(source) helper using @sanity/image-url and sanityClient.config().
+Do not integrate deeply unless cover images are already used by UI.
+
+STEP 7 — Wire into pages (App Router server components)
+A) Home: src/app/page.tsx
+- Fetch posts from contentProvider.getLatestPosts(12)
+- Render a list of links to /blog/[slug] (or /[slug] if that’s your route; prefer /blog/[slug])
+- Keep UI minimal and consistent with existing layout (MUI components ok).
+- Remove mock data usage.
+
+B) Post detail route:
+Preferred route: src/app/blog/[slug]/page.tsx
+- Fetch via contentProvider.getPostBySlug(params.slug)
+- If null: return notFound() from next/navigation
+- Render title/date/excerpt
+- Render body using PortableTextRenderer (if body exists)
+- If you already created src/app/[slug]/page.tsx earlier, migrate to /blog/[slug] and remove or redirect.
+
+STEP 8 — Tests (unit tests only; no network calls)
+Add tests for the pure layer (mappers):
+- src/lib/cms/sanity/mappers.test.ts
+Create inline fixtures resembling Sanity responses and assert:
+- slug is string
+- id maps from _id
+- missing excerpt/author handled without throwing
+- detail mapper preserves body
+
+Optional smoke test:
+- PortableTextRenderer renders a simple paragraph block safely.
+
+Rules:
+- No real Sanity requests in tests.
+- Do not mock Next server components; test pure functions.
+
+STEP 9 — Docs
+Create docs/SANITY.md with:
+- Where to find projectId/dataset/apiVersion in Sanity dashboard
+- How to set .env.local
+- If dataset is private: how to create a Viewer/Read token
+- How revalidation works (revalidate: 30)
+- Commands: npm run dev / lint / test / build
+
+STEP 10 — Quality gates (must be green)
+Run and fix until green:
+- npm run lint
+- npm run test
+- npm run build
+
+DELIVERABLES
+- List of files created/updated
+- Short summary of how pages now fetch from Sanity (Home + Post Detail)
+- Confirm lint/test/build are passing
+- Reminder: user must fill env vars in .env.local (do not commit)

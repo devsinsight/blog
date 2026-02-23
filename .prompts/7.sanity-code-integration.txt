@@ -1,0 +1,62 @@
+You are Roo Code running in VS Code on Windows 11. Use npm (NOT pnpm).
+Task: Render Sanity Portable Text blocks of type "code" in our Next.js blog frontend.
+Do NOT install @sanity/code-input in the frontend (Studio-only). Instead, implement a Portable Text custom renderer for `types.code`.
+Add optional syntax highlighting using a lightweight library. Keep it minimal and ensure lint/test/build pass.
+
+STEP 1 — Confirm code blocks exist in Sanity data
+1) In the post detail page, temporarily log the first code block:
+   - Find `post.body` (or `post.content`) and locate an item with `_type === "code"`.
+   - Confirm it has fields like: `code`, `language`, `filename` (depending on plugin options).
+
+STEP 2 — Install a syntax highlighter (choose ONE, prefer lighter)
+Option A (simple, common):
+- npm install react-syntax-highlighter
+
+OR Option B (Prism-based):
+- npm install prismjs
+
+Choose ONE. Prefer react-syntax-highlighter for speed.
+
+STEP 3 — Add a dedicated CodeBlock component
+Create:
+- src/features/blog/ui/CodeBlock/CodeBlock.tsx
+
+Requirements:
+- Accept props: { code: string; language?: string; filename?: string }
+- Render:
+  - filename (if present) in a small header bar
+  - highlighted code using the chosen library
+- Must be safe and not use dangerouslySetInnerHTML.
+
+If using react-syntax-highlighter:
+- Use the Prism export (preferred)
+- Import only the needed language if possible (keep minimal)
+
+STEP 4 — Wire CodeBlock into PortableTextRenderer
+Update:
+- src/features/blog/ui/PortableTextRenderer/PortableTextRenderer.tsx
+
+Add to `components.types`:
+- code: ({ value }) => <CodeBlock code={value.code ?? ""} language={value.language} filename={value.filename} />
+
+Make sure it matches the shape coming from Sanity:
+- value.code is the actual string content
+- value.language is a string like "ts", "js", "bash"
+- value.filename optional
+
+STEP 5 — Ensure the GROQ query includes body blocks with code
+In the Sanity post detail query, ensure we fetch the body as-is (Portable Text array).
+Do NOT project away fields inside body; keep the code object intact.
+
+STEP 6 — Add minimal tests (no network)
+- Add a unit test for CodeBlock rendering plain code (no crash).
+- Add a test that PortableTextRenderer renders a code block when given a Portable Text value with `_type: "code"`.
+
+STEP 7 — Quality gates
+Run and fix until green:
+- npm run lint
+- npm run test
+- npm run build
+
+DELIVERABLE
+- Code blocks from Sanity render correctly on /blog/[slug] with optional syntax highlighting.

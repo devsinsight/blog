@@ -1,0 +1,87 @@
+You are Roo Code running in VS Code on Windows 11. Use npm (NOT pnpm).
+Goal: Bootstrap a Next.js blog frontend repo (App Router) with TypeScript, ESLint, Material UI, Jest + Testing Library, and a SOLID-friendly folder structure. This is ONLY scaffolding + dependencies + baseline configs. Do not build real components yet beyond minimal placeholders.
+
+ENVIRONMENT
+- Windows 11
+- Node 22+
+- Package manager: npm
+- Use Next.js official CLI tools
+
+STEP A — Create project (official CLI)
+1) Create the project in the current workspace folder using:
+   npx create-next-app@latest devsinsight-blog
+   Choose:
+   - TypeScript: Yes
+   - ESLint: Yes
+   - Tailwind: No (we will use MUI)
+   - src directory: Yes
+   - App Router: Yes
+   - Import alias: Yes (use @/*)
+2) Open and work inside "devsinsight-blog".
+
+STEP B — Install libraries (npm)
+Install:
+- UI: @mui/material @mui/icons-material @emotion/react @emotion/styled
+- Theme: next-themes
+- Testing: jest jest-environment-jsdom @testing-library/react @testing-library/jest-dom @testing-library/user-event
+- Tooling: prettier eslint-config-prettier
+
+STEP C — Create folder structure (must be done in this prompt)
+Create these folders:
+src/features/blog/domain
+src/features/blog/services
+src/features/blog/ui
+src/shared/ui
+src/shared/hooks
+src/shared/utils
+src/shared/config
+src/shared/types
+src/lib/cms
+src/lib/env
+src/styles/theme
+src/styles/globals
+src/tests
+docs
+
+STEP D — Configure Jest for Next.js (must be working)
+1) Add jest config using next/jest:
+- jest.config.ts
+- npm i -D @types/jest
+- jest.setup.ts (import "@testing-library/jest-dom")
+2) Update package.json scripts:
+- "test": "jest"
+- "test:watch": "jest --watch"
+- "typecheck": "tsc -p tsconfig.json --noEmit"
+- "format": "prettier --write ."
+
+STEP E — Minimal providers (MUI theme foundation)
+1) Create:
+- src/styles/theme/createTheme.ts (export lightTheme and darkTheme)
+- src/shared/ui/Providers/AppProviders.tsx (this can be a client component) that wires:
+  - next-themes ThemeProvider
+  - MUI ThemeProvider (choose theme based on resolved theme)
+2) Update src/app/layout.tsx to wrap children with AppProviders.
+3) Add minimal global CSS (src/styles/globals/globals.css) and import it from layout.tsx.
+
+STEP F — Add a smoke test
+1) Create src/app/page.tsx with a simple <h1>Blog Home</h1> placeholder.
+2) Create src/app/page.test.tsx (or under src/tests) to render Home and assert "Blog Home" exists.
+3) Add a shared test helper:
+- src/tests/renderWithProviders.tsx to render components wrapped with AppProviders as needed.
+Make sure the smoke test passes in jsdom.
+
+STEP G — Quality gates (must be green)
+Run and fix until all pass:
+- npm run lint
+- npm run test
+- npm run build
+
+OUTPUT
+- Show the final scripts section of package.json
+- List the important files created/modified
+- Provide the exact commands to run locally
+
+CONSTRAINTS
+- Keep it simple. Blog only.
+- No CMS integration in this step.
+- Avoid overengineering.
