@@ -65,7 +65,7 @@ const basePost = (post: SanityPost) => {
     coverImageUrl: post.coverImageUrl ?? undefined,
     coverImage,
     coverImageAlt,
-    author: author ?? { id: "unknown", name: "Unknown", slug: "unknown", avatarUrl: undefined },
+    author: author ?? undefined,
     tags,
     publishedAt: post.publishedAt ?? undefined,
     createdAt: post._createdAt ?? new Date().toISOString(),

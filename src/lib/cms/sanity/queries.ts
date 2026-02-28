@@ -6,6 +6,12 @@ const baseProjection = `{
   _createdAt,
   _updatedAt,
   image{..., asset->, alt, caption},
+  author->{
+    _id,
+    name,
+    slug,
+    "avatarUrl": avatar.asset->url
+  },
   body
 }`;
 

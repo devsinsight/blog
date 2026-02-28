@@ -27,7 +27,9 @@ export default function PostCard({ post }: PostCardProps) {
               <Typography variant="body2" color="text.secondary">
                 {formattedDate}
               </Typography>
-              <Chip size="small" label={post.author?.name ?? "Unknown"} aria-label="Author" />
+              {post.author?.name ? (
+                <Chip size="small" label={post.author.name} aria-label="Author" />
+              ) : null}
             </Stack>
 
             <Typography variant="h6" component="h3">

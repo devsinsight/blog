@@ -24,6 +24,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
       <header>
         <h1>{post.title}</h1>
         {post.publishedAt && <p>{new Date(post.publishedAt).toDateString()}</p>}
+        {post.author?.name && <p>By {post.author.name}</p>}
         {post.excerpt && <p>{post.excerpt}</p>}
         {coverUrl && (
           <div style={{ position: "relative", width: "100%", maxWidth: 1200, aspectRatio: "1200 / 630" }}>
