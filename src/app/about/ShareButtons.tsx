@@ -4,7 +4,7 @@ import ShareIcon from "@mui/icons-material/Share";
 import XIcon from "@mui/icons-material/X";
 import LinkedInIcon from "@mui/icons-material/LinkedIn";
 import { IconButton, Stack, Tooltip } from "@mui/material";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { buildShareLinks } from "./shareLinks";
 
 type Props = {
@@ -12,7 +12,12 @@ type Props = {
 };
 
 export function ShareButtons({ label = "Share" }: Props) {
-  const [url] = useState<string>(() => (typeof window !== "undefined" ? window.location.href : ""));
+  const [url, setUrl] = useState<string>("");
+
+  useEffect(() => {
+    // Ensure value is set client-side only to avoid SSR mismatch
+    setUrl(window.location.href);
+  }, []);
 
   const links = url ? buildShareLinks(url) : null;
 

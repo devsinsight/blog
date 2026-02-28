@@ -12,7 +12,13 @@ const baseProjection = `{
     slug,
     "avatarUrl": avatar.asset->url
   },
-  body
+  body[]{
+    ...,
+    _type == "image" => {
+      ...,
+      asset->{..., url}
+    }
+  }
 }`;
 
 export const latestPostsQuery = `*[_type == "post" && defined(slug.current) && publishedAt != null] | order(publishedAt desc)[0...$limit] ${baseProjection}`;

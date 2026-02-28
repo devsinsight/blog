@@ -23,7 +23,11 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
     <article>
       <header>
         <h1>{post.title}</h1>
-        {post.publishedAt && <p>{new Date(post.publishedAt).toDateString()}</p>}
+        {post.publishedAt ? (
+          <p>
+            <time dateTime={post.publishedAt}>{formatPublishedDate(post.publishedAt)}</time>
+          </p>
+        ) : null}
         {post.author?.name && <p>By {post.author.name}</p>}
         {post.excerpt && <p>{post.excerpt}</p>}
         {coverUrl && (
@@ -46,3 +50,11 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   );
 }
 
+function formatPublishedDate(dateString: string) {
+  return new Intl.DateTimeFormat("en-US", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(new Date(dateString));
+}
