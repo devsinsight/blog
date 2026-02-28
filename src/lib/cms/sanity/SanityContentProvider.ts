@@ -23,7 +23,6 @@ export class SanityContentProvider implements ContentProvider {
   async getPostBySlug(slug: string): Promise<PostView | null> {
     if (!slug) return null;
     const result = await sanityClient.fetch(postBySlugQuery, { slug }, fetchOptions);
-    console.log('RESULT: ', result)
     return mapSanityPostDetail(result);
   }
 }
