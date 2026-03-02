@@ -1,5 +1,35 @@
 :root {
   color-scheme: light dark;
+  /* Prose theme tokens */
+  --prose-text: #e5e7eb;
+  --prose-strong: #f3f4f6;
+  --prose-link: #93c5fd;
+  --prose-quote-bg: rgba(255, 255, 255, 0.04);
+  --prose-quote-border: #9ca3af;
+  --prose-figure-bg: #111827;
+  --prose-figure-border: rgba(255, 255, 255, 0.08);
+}
+
+html.light {
+  color-scheme: light;
+  --prose-text: #0f172a;
+  --prose-strong: #111827;
+  --prose-link: #1d4ed8;
+  --prose-quote-bg: #f1f5f9;
+  --prose-quote-border: #cbd5e1;
+  --prose-figure-bg: #f8fafc;
+  --prose-figure-border: #e2e8f0;
+}
+
+html.dark {
+  color-scheme: dark;
+  --prose-text: #e5e7eb;
+  --prose-strong: #f3f4f6;
+  --prose-link: #93c5fd;
+  --prose-quote-bg: rgba(255, 255, 255, 0.04);
+  --prose-quote-border: #9ca3af;
+  --prose-figure-bg: #111827;
+  --prose-figure-border: rgba(255, 255, 255, 0.08);
 }
 
 * {
@@ -28,20 +58,20 @@ body {
   margin: 0 0 1.1em;
   line-height: 1.75;
   font-size: 1.02rem;
-  color: #e5e7eb;
+  color: var(--prose-text);
 }
 
 .prose-quote {
   margin: 1.2em 0;
   padding: 0.85em 1.2em;
-  border-left: 4px solid #9ca3af;
-  background: rgba(255, 255, 255, 0.04);
+  border-left: 4px solid var(--prose-quote-border);
+  background: var(--prose-quote-bg);
   border-radius: 8px;
   font-style: italic;
-  color: #f3f4f6;
+  color: var(--prose-strong);
 }
 
-.prose-strong { font-weight: 700; }
+.prose-strong { font-weight: 700; color: var(--prose-strong); }
 .prose-em { font-style: italic; }
 .prose-underline { text-decoration: underline; text-decoration-thickness: 2px; }
 
@@ -54,7 +84,7 @@ body {
 }
 
 .prose-link {
-  color: #93c5fd;
+  color: var(--prose-link);
   text-decoration: underline;
   text-decoration-thickness: 2px;
   text-underline-offset: 3px;
@@ -80,8 +110,8 @@ body {
   width: 100%;
   max-width: 100%;
   aspect-ratio: 16 / 9;
-  background: #111827;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--prose-figure-bg);
+  border: 1px solid var(--prose-figure-border);
   border-radius: 12px;
   overflow: hidden;
 }
@@ -96,7 +126,7 @@ body {
 .prose-figcaption {
   margin-top: 0.6em;
   font-size: 0.95rem;
-  color: #d1d5db;
+  color: var(--prose-text);
   text-align: center;
 }
 
